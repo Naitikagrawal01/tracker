@@ -28,7 +28,7 @@ import EmergencyBanner from './components/EmergencyBanner';
 import SafeRoute from './components/SafeRoute';
 
 /* ── API + Socket (module level, reassigned on port fallback) ── */
-let API_BASE = 'http://localhost:5000';
+let API_BASE = "https://tracker-1-b1ri.onrender.com";
 let socket = io(API_BASE, { transports: ['websocket', 'polling'] });
 
 /* ── Recenter map on first GPS fix ── */
@@ -92,9 +92,9 @@ function App() {
   /* ── Socket + initial data fetch ── */
   useEffect(() => {
     const fetchInitial = async (base) => {
-      const res = await fetch(`${base}/api/crowd-data`);
-      return res.json();
-    };
+  const res = await fetch(`${base}/crowd-data`);
+  return res.json();
+};
 
     const bootstrap = async () => {
       try {
