@@ -3,18 +3,18 @@ const Incident = require('../models/Incident');
 
 // Helper function to calculate crowd data - Exported for the server interval broadcaster
 exports.calculateCrowdData = async () => {
-  // Fix 5: Replace JS array clustering with Native MongoDB Aggregation
-  
+  // Phase 1: Updated aggregation with ~55m grid cells (factor 2000)
+
   // 1. Get total active users
   const totalActiveUsers = await Location.countDocuments({});
 
-  // 2. Aggregation to group users tightly (~110m grids by rounding to 3 decimal places)
+  // 2. Aggregation to group users into ~55m grid cells
   const aggregationPipeline = [
     {
       $group: {
         _id: {
-          lat: { $divide: [{ $round: [{ $multiply: ["$lat", 1000] }, 0] }, 1000] },
-          lng: { $divide: [{ $round: [{ $multiply: ["$lng", 1000] }, 0] }, 1000] }
+          lat: { $divide: [{ $round: [{ $multiply: ["$lat", 2000] }, 0] }, 2000] },
+          lng: { $divide: [{ $round: [{ $multiply: ["$lng", 2000] }, 0] }, 2000] }
         },
         crowdCount: { $sum: 1 }
       }
@@ -22,7 +22,7 @@ exports.calculateCrowdData = async () => {
     {
       $project: {
         _id: 0,
-        lat: "$_id.lat", // Flatten properties
+        lat: "$_id.lat",
         lng: "$_id.lng",
         crowdCount: 1
       }
@@ -31,12 +31,13 @@ exports.calculateCrowdData = async () => {
 
   const groupedLocations = await Location.aggregate(aggregationPipeline);
 
-  // 3. Assign Risk Levels to resulting bins
+  // 3. Phase 1: Updated Risk Thresholds
+  //    < 5 = LOW | 5-14 = MEDIUM | 15-24 = HIGH | 25+ = CRITICAL
   const crowdData = groupedLocations.map(area => {
     let riskLevel = 'LOW';
-    if (area.crowdCount > 10) riskLevel = 'CRITICAL';
-    else if (area.crowdCount >= 7) riskLevel = 'HIGH';
-    else if (area.crowdCount >= 3) riskLevel = 'MEDIUM';
+    if (area.crowdCount >= 25) riskLevel = 'CRITICAL';
+    else if (area.crowdCount >= 15) riskLevel = 'HIGH';
+    else if (area.crowdCount >= 5) riskLevel = 'MEDIUM';
     return { ...area, riskLevel };
   });
 
@@ -86,15 +87,15 @@ exports.getAlerts = async (req, res) => {
     const grid = {};
     
     locations.forEach(loc => {
-      const gridLat = Math.round(loc.lat * 1000) / 1000;
-      const gridLng = Math.round(loc.lng * 1000) / 1000;
+      const gridLat = Math.round(loc.lat * 2000) / 2000;
+      const gridLng = Math.round(loc.lng * 2000) / 2000;
       const key = `${gridLat},${gridLng}`;
       if (!grid[key]) grid[key] = { lat: gridLat, lng: gridLng, count: 0 };
       grid[key].count += 1;
     });
 
     const highRiskCrowds = Object.values(grid)
-      .filter(area => area.count >= 10)
+      .filter(area => area.count >= 15)
       .map(area => ({
         lat: area.lat,
         lng: area.lng,
@@ -128,7 +129,7 @@ exports.reportIncident = async (req, res) => {
   console.log("➡️ Entering reportIncident controller");
   try {
     const { reportId, lat, lng, description, riskLevel } = req.body;
-    console.log("📥 Incoming Report Data (Full req.body):", req.body);
+    console.log("📥 Incoming Report Data:", req.body);
     
     if (lat === undefined || lng === undefined || !description) {
       console.log("❌ Validation failed: Missing required fields");
@@ -136,33 +137,33 @@ exports.reportIncident = async (req, res) => {
     }
 
     const incident = new Incident({
-      reportId: reportId || `anon-${Date.now()}`, // Fallback if no specific user id provided
+      reportId: reportId || `anon-${Date.now()}`,
       lat,
       lng,
       description,
-      riskLevel: riskLevel || 'HIGH' // Default level is high for manual reporting
+      riskLevel: riskLevel || 'HIGH'
     });
 
-    console.log("💾 Attempting to save new Incident to MongoDB...");
+    console.log("💾 Saving incident to MongoDB...");
     await incident.save();
-    console.log("✅ Incident successfully saved to MongoDB:", incident);
+    console.log("✅ Incident saved:", incident);
 
     res.json({ success: true, message: "Incident reported successfully", incident });
   } catch (error) {
-    console.error("❌ Incident reporting error caught in catch block:", error);
+    console.error("❌ Incident reporting error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// Fix 3: GET /api/zones
+// 5. GET /api/zones
 exports.getZones = async (req, res) => {
   try {
     const aggregationPipeline = [
       {
         $group: {
           _id: {
-            lat: { $divide: [{ $round: [{ $multiply: ["$lat", 1000] }, 0] }, 1000] },
-            lng: { $divide: [{ $round: [{ $multiply: ["$lng", 1000] }, 0] }, 1000] }
+            lat: { $divide: [{ $round: [{ $multiply: ["$lat", 2000] }, 0] }, 2000] },
+            lng: { $divide: [{ $round: [{ $multiply: ["$lng", 2000] }, 0] }, 2000] }
           },
           count: { $sum: 1 }
         }
@@ -181,9 +182,9 @@ exports.getZones = async (req, res) => {
 
     const zones = groupedLocations.map(area => {
       let riskLevel = 'LOW';
-      if (area.count > 10) riskLevel = 'CRITICAL';
-      else if (area.count >= 7) riskLevel = 'HIGH';
-      else if (area.count >= 3) riskLevel = 'MEDIUM';
+      if (area.count >= 25) riskLevel = 'CRITICAL';
+      else if (area.count >= 15) riskLevel = 'HIGH';
+      else if (area.count >= 5) riskLevel = 'MEDIUM';
 
       return {
         lat: area.lat,
