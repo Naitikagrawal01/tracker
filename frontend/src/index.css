@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Outfit', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: #0f172a; /* Slate 900 fallback layout */
+}
+
+/* Map specific resets to match the dark aesthetic */
+.leaflet-container {
+  background: #0f172a !important; /* Keep edge loads clean */
+}
+
+/* Clean up Leaflet Popups to be more modern and rounded */
+.leaflet-popup-content-wrapper {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-radius: 14px !important;
+  padding: 4px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+.leaflet-popup-tip {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.danger-glow {
+  box-shadow: 0 0 35px rgba(239, 68, 68, 0.4);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  background: rgba(30, 5, 5, 0.65); /* ultra sleek dark red blur */
+}
+
+/* Premium Animations */
+@keyframes slideDown {
+  from { opacity: 0; transform: translate(-50%, -40px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulse-icon {
+  0% { filter: drop-shadow(0 0 2px rgba(239,68,68,0)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 10px rgba(239,68,68,0.8)); transform: scale(1.1); }
+  100% { filter: drop-shadow(0 0 2px rgba(239,68,68,0)); transform: scale(1); }
+}
+
+.pulsate-icon {
+  animation: pulse-icon 2s infinite ease-in-out;
+}
