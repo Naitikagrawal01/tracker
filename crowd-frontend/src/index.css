@@ -1,0 +1,201 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* ─── Design Tokens ─── */
+:root {
+  --font-primary: 'Outfit', system-ui, -apple-system, sans-serif;
+  --color-bg: #0b1120;
+  --color-surface: rgba(15, 23, 42, 0.72);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-text: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-accent: #2563eb;
+  --color-accent-glow: rgba(37, 99, 235, 0.35);
+  --color-risk-low: #10b981;
+  --color-risk-medium: #f59e0b;
+  --color-risk-high: #ef4444;
+  --color-risk-critical: #dc2626;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 9999px;
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+  --blur: 18px;
+  color-scheme: dark;
+}
+
+/* ─── Reset ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Map Overrides ─── */
+.leaflet-container {
+  background: var(--color-bg) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 6px;
+  box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.15) !important;
+}
+.leaflet-popup-tip {
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+/* ─── Glassmorphism ─── */
+.glass-panel {
+  background: var(--color-surface);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
+}
+
+.danger-glow {
+  box-shadow: 0 0 40px rgba(239, 68, 68, 0.35), inset 0 0 60px rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(30, 5, 5, 0.6);
+}
+
+/* ─── Keyframe Animations ─── */
+@keyframes slideDown {
+  from { opacity: 0; transform: translate(-50%, -32px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+.animate-slide-down {
+  animation: slideDown 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulseGlow {
+  0%   { filter: drop-shadow(0 0 2px rgba(239,68,68,0)); transform: scale(1); }
+  50%  { filter: drop-shadow(0 0 12px rgba(239,68,68,0.85)); transform: scale(1.12); }
+  100% { filter: drop-shadow(0 0 2px rgba(239,68,68,0)); transform: scale(1); }
+}
+.pulsate-icon {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-accent-glow); }
+  50%      { box-shadow: 0 0 0 10px transparent; }
+}
+.breathing-ring {
+  animation: breathe 2.5s infinite ease-in-out;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Loading Skeleton ─── */
+.skeleton-map {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: linear-gradient(
+    110deg,
+    var(--color-bg) 30%,
+    rgba(37, 99, 235, 0.06) 50%,
+    var(--color-bg) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
+
+.skeleton-map .loader-ring {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ─── Utility ─── */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
+/* ─── Responsive Panel ─── */
+@media (max-width: 640px) {
+  .control-panel {
+    top: auto !important;
+    bottom: 80px !important;
+    left: 12px !important;
+    right: 12px !important;
+    min-width: unset !important;
+    padding: 16px !important;
+    border-radius: var(--radius-md) !important;
+  }
+}
+
+/* ═══════════ Phase 2 & 3 Additions ═══════════ */
+
+/* ─── SOS Button Pulse ─── */
+@keyframes sosPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.5); }
+  50%      { box-shadow: 0 0 0 18px rgba(220,38,38,0); }
+}
+
+/* ─── Predictive Warning Badge ─── */
+.prediction-badge {
+  animation: fadeInUp 0.4s ease-out forwards, warningPulse 2.5s infinite ease-in-out 0.4s;
+}
+
+@keyframes warningPulse {
+  0%, 100% { opacity: 0.8; }
+  50%      { opacity: 1; }
+}
+
+/* ─── Safe Route Toggle ─── */
+.safe-route-btn {
+  transition: all 0.2s ease;
+}
+.safe-route-btn:hover {
+  transform: scale(1.05) !important;
+}
+.safe-route-btn.active {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+}
